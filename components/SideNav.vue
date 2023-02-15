@@ -14,12 +14,14 @@
       <br>
       <p class="txt">シェア</p>
       <validation-observer ref="obs" v-slot="ObserverProps">
-        <validation-provider v-slot="ProviderProps" rules="required|max:120">
-          <textarea v-model="newContent" name="コンテンツ"></textarea>
-          <div class="error txt">{{ ProviderProps.errors[0] }}</div>
-          <br>
+        <form @submit.prevent="postAdd">
+          <validation-provider v-slot="ProviderProps" rules="required|max:120">
+              <textarea v-model="newContent" name="コンテンツ"></textarea>
+              <div class="error txt">{{ ProviderProps.errors[0] }}</div>
+            <br>
           </validation-provider>
-        <button @click="insertPost" class="btn" :disabled="ObserverProps.invalid || !ObserverProps.validated">シェアする</button>
+          <button @click="insertPost" class="btn" :disabled="ObserverProps.invalid || !ObserverProps.validated">シェアする</button>
+        </form>
       </validation-observer>
     </div>
   </div>
@@ -29,15 +31,14 @@ export default {
   data() {
     return {
       newContent: '',
-      posts: []
+      postList: []
     };
   },
   methods: {
     async getPost() {
       const resData = await this.$axios.get("http://127.0.0.1:8000/api/post/");
-      this.posts = resData.data.data
+      this.postList = resData.data.data
     },
-  
     async insertPost() {
       const sendData = {
         user_id: this.$store.state.user,
@@ -45,10 +46,19 @@ export default {
       }
       await this.$axios.post("http://127.0.0.1:8000/api/post/", sendData);
       this.newContent = null
-      this.$nuxt.$emit('sendPost', sendData)
     },
-    
+    postAdd() {
+      const sendData = {
+        user_id: this.$store.state.user,
+        content: this.newContent,
+      }
+      this.$emit('sendPost', sendData)
+    }
+  },
+  async created() {
+    await this.getPost()
   }
+  
 }
 
 </script>

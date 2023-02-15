@@ -1,14 +1,13 @@
 <template>
   <div>
     <div class="container flex">
-      <SideNav class="side"></SideNav>
+      <SideNav @sendPost="newPost" class="side"></SideNav>
       <div class="main">
         <div class="wrap-s">
           <p class="ttl m-15">ホーム</p>
         </div>
         <div class="wrap-m">
-          <Message v-for="(post,index) in posts" :key="index" :post="post"></Message>
-          <p class="txt">{{ resData }}</p>
+          <Message v-for="(post,index) in displayPosts" :key="index" :post="post"></Message>
         </div>
       </div>
     </div>
@@ -19,32 +18,28 @@
 export default {
   data() {
     return {
-      posts: [
-        {
-          user_id: 'u-iddayo',
-          content: '内容'
-        },
-        {
-          user_id: 'u-iddayo',
-          content: '内容2'
-        }]
+      posts: [{}],
     }
+  },
+  computed: {
+    displayPosts() {
+      return this.posts.user_id === this.$store.state.user;
+  },
   },
   methods: {
     async getPost() {
       const resData = await this.$axios.get("http://127.0.0.1:8000/api/post/");
-      if (resData.user_id == $store.state.user) {
-        this.posts.user_id = resData.user_id
-        this.posts.content = resData.content
-      }
-
+      this.posts = resData.data.data
     },
+    newPost(sendData) {
+      this.posts.push(sendData);
+    },
+    
   },
-  created() {
-    this.$nuxt.$on('sendPost', posts => {
-      this.posts = posts;
-    });
-  },
+  async created() {
+    await this.getPost()
+  }
+  
 }
 </script>
 <style>
@@ -53,7 +48,6 @@ export default {
 <style>
 .container {
   width: 100vw;
-  height: 100vh;
   background: black;
 }
 
@@ -67,6 +61,8 @@ export default {
 
 .side {
   width: 20vw;
+  position: sticky;
+  top:0;
 }
 
 .txt {

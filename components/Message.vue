@@ -4,25 +4,42 @@
       <p class="post-user txt">{{ $store.state.user }}</p>
       <img src="~/assets/img/heart.png" alt="いいね" class="item-img">
       <p class="txt">2</p>
-      <img src="~/assets/img/cross.png" alt="削除" class="item-img">
-      <img src="~/assets/img/detail.png" alt="コメント" class="item-img">
+      <img src="~/assets/img/cross.png" alt="削除" @click="deletePost" class="item-img">
+      <img src="~/assets/img/detail.png"  alt="コメントへ" class="item-img" @click="goPostDetail">
     </div>
     <br>
-    <div class="post-content txt">{{ content }}</div>
+    <div class="post-content txt">{{ post.content }}</div>
   </div>
 </template>
 
 <script>
 export default {
+  props: {
+    post: {
+      type: Object,
+    },
+    like: {
+      type: Object,
+    },
+  },
   data() {
-    return {
-      props: {
-        post: {
-          type: Object,
-        }
-      },
-      
-    }
+
+  },
+  methods: {
+    async getPost() {
+      const resData = await this.$axios.get("http://127.0.0.1:8000/api/post/");
+      this.posts = resData.data.data
+    },
+    async deletePost(id) {
+      await this.$axios.delete("http://127.0.0.1:8000/api/post/" + id)
+      this.getPost();
+    },
+    goPostDetail() {
+      this.$router.push({ path: `/posts/${this.id}` });
+    },
+    created() {
+      this.getPost();
+    },
   },
 }
 </script>
